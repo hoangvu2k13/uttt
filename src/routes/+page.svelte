@@ -902,7 +902,36 @@
   });
 </script>
 
+<svelte:head>
+  <title>Ultimate Tic-Tac-Toe - Made by Jack</title>
+  <meta
+    name="description"
+    content="Play Ultimate Tic-Tac-Toe locally, against a bot, or online with friends and ranked matchmaking. Control the grid, win the meta."
+  />
+  <meta name="robots" content="index,follow" />
+  <meta property="og:title" content="Ultimate Tic-Tac-Toe" />
+  <meta
+    property="og:description"
+    content="Play Ultimate Tic-Tac-Toe locally, against a bot, or online with friends and ranked matchmaking."
+  />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="color-scheme" content="dark light" />
+  <meta
+    name="theme-color"
+    media="(prefers-color-scheme: dark)"
+    content="#0a1420"
+  />
+  <meta
+    name="theme-color"
+    media="(prefers-color-scheme: light)"
+    content="#e8eef7"
+  />
+  <link rel="icon" href="/uttt_logo.svg" type="image/svg+xml" />
+</svelte:head>
+
 <div class="app" data-theme={theme} data-screen={screen}>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <!-- Ambient background particles -->
   <div class="ambient" aria-hidden="true">
     <div class="orb orb-1"></div>
@@ -912,11 +941,16 @@
   </div>
 
   {#if menuOpen}
-    <div class="menu-overlay" role="dialog" aria-modal="true">
+    <div
+      class="menu-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="menu-title"
+    >
       <div class="menu-shell">
         <div class="menu-header">
           <p class="menu-eyebrow">Made by JACK</p>
-          <h2>Ultimate Tic-Tac-Toe</h2>
+          <h2 id="menu-title">Ultimate Tic-Tac-Toe</h2>
           <p class="menu-subtitle">The strategy game inside a strategy game.</p>
         </div>
 
@@ -985,6 +1019,7 @@
                     onclick={() =>
                       copyRoomCode(onlineRoom.code ?? onlineRoom.id)}
                     title="Copy room code"
+                    aria-label="Copy room code"
                   >
                     <i class="fa-solid fa-copy" aria-hidden="true"></i>
                   </button>
@@ -1010,7 +1045,9 @@
                 <span>Create Room</span>
               </button>
               <div class="field-row">
+                <label class="sr-only" for="menu-social-code">Room code</label>
                 <input
+                  id="menu-social-code"
                   placeholder="Room code"
                   bind:value={socialCode}
                   class="flex-input"
@@ -1020,6 +1057,7 @@
                   class="btn-ghost btn-icon-only"
                   onclick={joinSocialRoom}
                   title="Join room"
+                  aria-label="Join room"
                 >
                   <i class="fa-solid fa-door-open" aria-hidden="true"></i>
                 </button>
@@ -1027,6 +1065,7 @@
                   class="btn-ghost btn-icon-only"
                   onclick={spectateSocialRoom}
                   title="Spectate room"
+                  aria-label="Spectate room"
                 >
                   <i class="fa-solid fa-binoculars" aria-hidden="true"></i>
                 </button>
@@ -1092,7 +1131,11 @@
                 <i class="fa-solid fa-robot" aria-hidden="true"></i>
                 Bot difficulty
               </label>
-              <select id="menu-botdiff" bind:value={botDifficulty} class="flex-input">
+              <select
+                id="menu-botdiff"
+                bind:value={botDifficulty}
+                class="flex-input"
+              >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
@@ -1103,7 +1146,11 @@
                 <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
                 Turn timer
               </label>
-              <select id="menu-turntimer" bind:value={turnTimeMs} class="flex-input">
+              <select
+                id="menu-turntimer"
+                bind:value={turnTimeMs}
+                class="flex-input"
+              >
                 <option value={15000}>15 seconds</option>
                 <option value={25000}>25 seconds</option>
                 <option value={35000}>35 seconds</option>
@@ -1148,7 +1195,8 @@
                     class="rank-badge"
                     style={`--rank-color:${currentRank.color}`}
                   >
-                    <i class={`fa-solid ${currentRank.icon}`}></i>
+                    <i class={`fa-solid ${currentRank.icon}`} aria-hidden="true"
+                    ></i>
                   </div>
                   <div class="profile-info">
                     <strong>{profile.displayName}</strong>
@@ -1158,9 +1206,18 @@
                   </div>
                 </div>
                 <div class="profile-stats">
-                  <span><p style="color: #3c8f52">Wins:</p> {profile.wins}</span>
-                  <span><p style="color: #8f3c3c">Losses:</p> {profile.losses}</span>
-                  <span><p style="color: #858585">Draws:</p> {profile.draws}</span>
+                  <span
+                    ><p style="color: #3c8f52">Wins:</p>
+                    {profile.wins}</span
+                  >
+                  <span
+                    ><p style="color: #8f3c3c">Losses:</p>
+                    {profile.losses}</span
+                  >
+                  <span
+                    ><p style="color: #858585">Draws:</p>
+                    {profile.draws}</span
+                  >
                 </div>
                 <div class="profile-recent">
                   <h4>Recent Matches</h4>
@@ -1196,7 +1253,8 @@
                   {/if}
                 </div>
                 <button class="btn-ghost" onclick={handleSignOut}>
-                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <i class="fa-solid fa-right-from-bracket" aria-hidden="true"
+                  ></i>
                   <span>Sign Out</span>
                 </button>
               </div>
@@ -1244,7 +1302,12 @@
     </div>
 
     <div class="topbar-center">
-      <div class="status-pill" class:winner={!!currentState.winner}>
+      <div
+        class="status-pill"
+        class:winner={!!currentState.winner}
+        role="status"
+        aria-live="polite"
+      >
         {#if currentState.winner === "D"}
           <i class="fa-solid fa-equals" aria-hidden="true"></i>
           <span>Draw!</span>
@@ -1266,6 +1329,9 @@
         class="icon-btn"
         onclick={() => (theme = theme === "light" ? "dark" : "light")}
         title={theme === "light" ? "Dark mode" : "Light mode"}
+        aria-label={theme === "light"
+          ? "Switch to dark mode"
+          : "Switch to light mode"}
       >
         {#if theme === "light"}
           <i class="fa-solid fa-moon" aria-hidden="true"></i>
@@ -1277,6 +1343,7 @@
         class="icon-btn"
         onclick={() => (soundEnabled = !soundEnabled)}
         title={soundEnabled ? "Mute sound" : "Enable sound"}
+        aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
       >
         {#if soundEnabled}
           <i class="fa-solid fa-volume-high" aria-hidden="true"></i>
@@ -1284,7 +1351,12 @@
           <i class="fa-solid fa-volume-xmark" aria-hidden="true"></i>
         {/if}
       </button>
-      <button class="icon-btn" onclick={openMenu} title="Menu">
+      <button
+        class="icon-btn"
+        onclick={openMenu}
+        title="Menu"
+        aria-label="Open menu"
+      >
         <i class="fa-solid fa-grid-2" aria-hidden="true"></i>
       </button>
       <button
@@ -1292,6 +1364,7 @@
         class:active={sidebarOpen}
         onclick={() => (sidebarOpen = !sidebarOpen)}
         title="Toggle panel"
+        aria-label={sidebarOpen ? "Close side panel" : "Open side panel"}
       >
         <i class="fa-solid fa-sliders" aria-hidden="true"></i>
       </button>
@@ -1299,7 +1372,7 @@
   </header>
 
   <!-- MAIN LAYOUT -->
-  <main class="layout" class:sidebar-open={sidebarOpen}>
+  <main id="main-content" class="layout" class:sidebar-open={sidebarOpen}>
     <div
       class="sidebar-scrim"
       class:show={sidebarOpen}
@@ -1312,7 +1385,11 @@
       }}
     ></div>
     <!-- LEFT: BOARD ZONE -->
-    <section class="board-zone" data-turn={currentState.currentPlayer}>
+    <section
+      class="board-zone"
+      data-turn={currentState.currentPlayer}
+      aria-label="Game board"
+    >
       <!-- Stat bar -->
       <div class="stat-bar">
         <div class="stat-card">
@@ -1545,13 +1622,15 @@
     </section>
 
     <!-- RIGHT: SIDE PANEL -->
-    <aside class="side-panel" class:open={sidebarOpen}>
+    <aside class="side-panel" class:open={sidebarOpen} aria-label="Game panel">
       <!-- MODE SWITCHER -->
-      <div class="mode-tabs">
+      <div class="mode-tabs" role="tablist" aria-label="Game modes">
         <button
           class="tab"
           class:tab-active={mode === "local"}
           onclick={() => requestModeSwitch("local")}
+          role="tab"
+          aria-selected={mode === "local"}
         >
           <i class="fa-solid fa-display" aria-hidden="true"></i>
           <span>Local</span>
@@ -1560,6 +1639,8 @@
           class="tab"
           class:tab-active={mode === "bot"}
           onclick={() => requestModeSwitch("bot")}
+          role="tab"
+          aria-selected={mode === "bot"}
         >
           <i class="fa-solid fa-robot" aria-hidden="true"></i>
           <span>vs Bot</span>
@@ -1568,6 +1649,8 @@
           class="tab"
           class:tab-active={mode === "social"}
           onclick={() => requestModeSwitch("social")}
+          role="tab"
+          aria-selected={mode === "social"}
         >
           <i class="fa-solid fa-people-group" aria-hidden="true"></i>
           <span>Social</span>
@@ -1576,6 +1659,8 @@
           class="tab"
           class:tab-active={mode === "competitive"}
           onclick={() => requestModeSwitch("competitive")}
+          role="tab"
+          aria-selected={mode === "competitive"}
         >
           <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
           <span>Ranked</span>
@@ -1814,7 +1899,9 @@
                 <span>Create Room</span>
               </button>
               <div class="field-row">
+                <label class="sr-only" for="side-social-code">Room code</label>
                 <input
+                  id="side-social-code"
                   placeholder="Room code"
                   bind:value={socialCode}
                   class="flex-input"
@@ -1824,6 +1911,7 @@
                   class="btn-ghost btn-icon-only"
                   onclick={joinSocialRoom}
                   title="Join room"
+                  aria-label="Join room"
                 >
                   <i class="fa-solid fa-door-open" aria-hidden="true"></i>
                 </button>
@@ -1831,6 +1919,7 @@
                   class="btn-ghost btn-icon-only"
                   onclick={spectateSocialRoom}
                   title="Spectate room"
+                  aria-label="Spectate room"
                 >
                   <i class="fa-solid fa-binoculars" aria-hidden="true"></i>
                 </button>
@@ -1848,6 +1937,7 @@
                     onclick={() =>
                       copyRoomCode(onlineRoom.code ?? onlineRoom.id)}
                     title="Copy room code"
+                    aria-label="Copy room code"
                   >
                     <i class="fa-solid fa-copy" aria-hidden="true"></i>
                   </button>
@@ -2078,7 +2168,9 @@
           <span>State Tools</span>
         </div>
         <div class="panel-body">
+          <label class="sr-only" for="state-json">Game state JSON</label>
           <textarea
+            id="state-json"
             rows="3"
             bind:value={exportText}
             placeholder="Paste or export game state JSON"
@@ -2105,16 +2197,32 @@
       role="button"
       tabindex="0"
       onclick={closeRules}
+      aria-label="Close rules"
+      onkeydown={(event) => {
+        if (
+          event.key === "Escape" ||
+          event.key === "Enter" ||
+          event.key === " "
+        )
+          closeRules();
+      }}
     >
       <div
         class="menu-modal"
         role="dialog"
+        tabindex="0"
         aria-modal="true"
+        aria-labelledby="rules-title"
         onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
       >
         <div class="menu-modal-header">
-          <h3>Rules</h3>
-          <button class="btn-ghost btn-icon-only" onclick={closeRules}>
+          <h3 id="rules-title">Rules</h3>
+          <button
+            class="btn-ghost btn-icon-only"
+            onclick={closeRules}
+            aria-label="Close rules"
+          >
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
         </div>
@@ -2134,42 +2242,73 @@
       role="button"
       tabindex="0"
       onclick={closeAuthModal}
+      aria-label="Close sign in"
+      onkeydown={(event) => {
+        if (
+          event.key === "Escape" ||
+          event.key === "Enter" ||
+          event.key === " "
+        )
+          closeAuthModal();
+      }}
     >
       <div
         class="menu-modal"
         role="dialog"
+        tabindex="0"
         aria-modal="true"
+        aria-labelledby="auth-title"
         onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
       >
         <div class="menu-modal-header">
-          <h3>{authModal.mode === "signup" ? "Create Account" : "Sign In"}</h3>
-          <button class="btn-ghost btn-icon-only" onclick={closeAuthModal}>
+          <h3 id="auth-title">
+            {authModal.mode === "signup" ? "Create Account" : "Sign In"}
+          </h3>
+          <button
+            class="btn-ghost btn-icon-only"
+            onclick={closeAuthModal}
+            aria-label="Close sign in"
+          >
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
         </div>
         <div class="field">
-          <label>Email</label>
+          <label for="auth-email">Email</label>
           <input
+            id="auth-email"
+            name="email"
             type="email"
             bind:value={authForm.email}
             placeholder="you@example.com"
+            autocomplete="email"
+            required
           />
         </div>
         <div class="field">
-          <label>Password</label>
+          <label for="auth-password">Password</label>
           <input
+            id="auth-password"
+            name="password"
             type="password"
             bind:value={authForm.password}
             placeholder="••••••••"
+            autocomplete={authModal.mode === "signup"
+              ? "new-password"
+              : "current-password"}
+            required
           />
         </div>
         {#if authModal.mode === "signup"}
           <div class="field">
-            <label>Display name</label>
+            <label for="auth-display-name">Display name</label>
             <input
+              id="auth-display-name"
+              name="displayName"
               type="text"
               bind:value={authForm.displayName}
               placeholder="Player name"
+              autocomplete="nickname"
             />
           </div>
         {/if}
@@ -2214,18 +2353,31 @@
       role="button"
       tabindex="0"
       onclick={() => (confirmSwitch = { open: false, nextMode: null })}
+      aria-label="Close mode switch confirmation"
+      onkeydown={(event) => {
+        if (
+          event.key === "Escape" ||
+          event.key === "Enter" ||
+          event.key === " "
+        )
+          confirmSwitch = { open: false, nextMode: null };
+      }}
     >
       <div
         class="menu-modal"
         role="dialog"
+        tabindex="0"
         aria-modal="true"
+        aria-labelledby="confirm-switch-title"
         onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
       >
         <div class="menu-modal-header">
-          <h3>Switch Mode?</h3>
+          <h3 id="confirm-switch-title">Switch Mode?</h3>
           <button
             class="btn-ghost btn-icon-only"
             onclick={() => (confirmSwitch = { open: false, nextMode: null })}
+            aria-label="Close confirmation"
           >
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
@@ -2271,13 +2423,13 @@
         class="modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Replay viewer"
+        aria-labelledby="replay-title"
         tabindex="0"
         onclick={(e) => e.stopPropagation()}
         onkeydown={(e) => e.stopPropagation()}
       >
         <div class="modal-header">
-          <h2>
+          <h2 id="replay-title">
             <i class="fa-solid fa-film" aria-hidden="true"></i>
             Replay — {replay.match.mode}
           </h2>
@@ -2431,7 +2583,7 @@
         class="win-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Match result"
+        aria-labelledby="win-title"
         tabindex="0"
         onclick={(e) => e.stopPropagation()}
         onkeydown={(e) => e.stopPropagation()}
@@ -2445,7 +2597,7 @@
             <i class="fa-regular fa-circle mark-icon o" aria-hidden="true"></i>
           {/if}
         </div>
-        <h2>
+        <h2 id="win-title">
           {#if winModal.winner === "D"}
             Draw Game
           {:else}
@@ -2488,7 +2640,7 @@
   {/if}
 
   <!-- TOAST NOTIFICATIONS -->
-  <div class="toast-zone" aria-live="polite">
+  <div class="toast-zone" role="status" aria-live="polite" aria-atomic="true">
     {#each toastList as toast (toast.id)}
       <div
         class="toast"
@@ -2614,6 +2766,35 @@
     margin: 0;
     padding: 0;
   }
+  .skip-link {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--primary);
+    color: var(--on-primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform 0.2s ease;
+    z-index: 40;
+  }
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
   :global(html) {
     scroll-behavior: smooth;
     height: 100%;
@@ -2651,7 +2832,10 @@
     max-width: 100%;
   }
 
-  input, button, textarea, select {
+  input,
+  button,
+  textarea,
+  select {
     font-family: inherit;
   }
 
@@ -2960,7 +3144,7 @@
   }
   .menu-subtitle {
     color: var(--text-dim);
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     margin-top: 4px;
   }
   .menu-cards {
@@ -3786,7 +3970,7 @@
   }
   .btn-sm {
     padding: 10px 14px;
-    font-size: .85rem;
+    font-size: 0.85rem;
   }
 
   /* ─────────────────────────────────────────
