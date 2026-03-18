@@ -13,6 +13,8 @@ const stateStore = {
   competitiveQueues: new Map(),
   scoreboard: new Map(),
   playersByToken: new Map(),
+  nameToSockets: new Map(),
+  friendWatchers: new Map(),
 };
 
 let adminApp = null;
@@ -46,6 +48,29 @@ function getPlayerRecord(token) {
 
 function setPlayerRecord(token, record) {
   stateStore.playersByToken.set(token, record);
+}
+
+function ensureNameBucket(nameKey) {
+  if (!stateStore.nameToSockets.has(nameKey)) {
+    stateStore.nameToSockets.set(nameKey, new Set());
+  }
+  return stateStore.nameToSockets.get(nameKey);
+}
+
+function ensureWatcherBucket(nameKey) {
+  if (!stateStore.friendWatchers.has(nameKey)) {
+    stateStore.friendWatchers.set(nameKey, new Map());
+  }
+  return stateStore.friendWatchers.get(nameKey);
+}
+
+function notifyFriendStatus(io, nameKey) {
+  const watchers = stateStore.friendWatchers.get(nameKey);
+  if (!watchers) return;
+  const online = (stateStore.nameToSockets.get(nameKey)?.size ?? 0) > 0;
+  for (const [socketId, originalName] of watchers.entries()) {
+    io.to(socketId).emit("friendStatus", { name: originalName, online });
+  }
 }
 
 function generateRoomCode() {
@@ -338,6 +363,18 @@ export function initSocketServer(httpServer) {
       record.socketId = socket.id;
       setPlayerRecord(record.token, record);
       socket.data.player = record;
+      const previousNameKey = socket.data.nameKey;
+      if (previousNameKey && stateStore.nameToSockets.has(previousNameKey)) {
+        stateStore.nameToSockets.get(previousNameKey).delete(socket.id);
+        if (stateStore.nameToSockets.get(previousNameKey).size === 0) {
+          stateStore.nameToSockets.delete(previousNameKey);
+        }
+        notifyFriendStatus(io, previousNameKey);
+      }
+      const nameKey = safeName.toLowerCase();
+      ensureNameBucket(nameKey).add(socket.id);
+      socket.data.nameKey = nameKey;
+      notifyFriendStatus(io, nameKey);
       socket.emit("helloAck", { token: record.token, playerId: record.id, name: record.name });
 
       if (record.roomId) {
@@ -475,6 +512,49 @@ export function initSocketServer(httpServer) {
       broadcastRoom(io, room, "stateUpdate", { room: roomSummary(room), reason: "move" });
     });
 
+    socket.on("sendChat", ({ roomId, text }) => {
+      const room = stateStore.rooms.get(roomId);
+      if (!room) return;
+      const player = socket.data.player;
+      const messageText = String(text || "").trim().slice(0, 200);
+      if (!messageText) return;
+      const payload = {
+        id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
+        text: messageText,
+        name: player?.name ?? "Player",
+        symbol: player?.symbol ?? null,
+        at: Date.now(),
+      };
+      io.to(room.id).emit("chatMessage", payload);
+    });
+
+    socket.on("addFriend", ({ name }) => {
+      const safeName = String(name || "").trim().slice(0, 24);
+      if (!safeName) return;
+      const nameKey = safeName.toLowerCase();
+      const watchers = ensureWatcherBucket(nameKey);
+      watchers.set(socket.id, safeName);
+      const online = (stateStore.nameToSockets.get(nameKey)?.size ?? 0) > 0;
+      socket.emit("friendStatus", { name: safeName, online });
+    });
+
+    socket.on("challengeFriend", ({ name, code }) => {
+      const player = socket.data.player;
+      if (!player) return;
+      const safeName = String(name || "").trim().slice(0, 24);
+      const safeCode = String(code || "").trim().slice(0, 32);
+      if (!safeName || !safeCode) return;
+      const nameKey = safeName.toLowerCase();
+      const targets = stateStore.nameToSockets.get(nameKey);
+      if (!targets || targets.size === 0) {
+        socket.emit("errorMessage", { message: "Friend is offline." });
+        return;
+      }
+      for (const socketId of targets) {
+        io.to(socketId).emit("friendChallenge", { from: player.name, code: safeCode });
+      }
+    });
+
     socket.on("offerDraw", ({ roomId }) => {
       const room = stateStore.rooms.get(roomId);
       const player = socket.data.player;
@@ -538,6 +618,20 @@ export function initSocketServer(httpServer) {
             room: roomSummary(room),
             reason: "spectatorLeft",
           });
+        }
+      }
+      const nameKey = socket.data.nameKey;
+      if (nameKey && stateStore.nameToSockets.has(nameKey)) {
+        const bucket = stateStore.nameToSockets.get(nameKey);
+        bucket.delete(socket.id);
+        if (bucket.size === 0) {
+          stateStore.nameToSockets.delete(nameKey);
+        }
+        notifyFriendStatus(io, nameKey);
+      }
+      for (const [watchKey, watchers] of stateStore.friendWatchers.entries()) {
+        if (watchers.delete(socket.id) && watchers.size === 0) {
+          stateStore.friendWatchers.delete(watchKey);
         }
       }
     });

@@ -1,0 +1,15 @@
+{
+  "name": "Ultimate Tic-Tac-Toe",
+  "short_name": "Ultimate TTT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f18",
+  "theme_color": "#0a0f18",
+  "icons": [
+    {
+      "src": "/uttt_logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
